@@ -159,3 +159,7 @@ def send_to_crm(name, phone, appointment_time):
         logging.info(f"CRM updated: {res.status_code} - {res.text}")
     except Exception as e:
         logging.error(f"CRM webhook failed: {e}")
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))
