@@ -1,0 +1,21 @@
+# Virtual environment
+.venv/
+
+# Ignore database file
+leads.db
+
+# Ignore temp files
+tempCodeRunnerFile.py
+
+# Ignore Python bytecode
+__pycache__/
+*.py[cod]
+
+# Ignore environment files
+.env
+
+# Ignore editor settings (optional)
+.vscode/
+
+# DO NOT ignore app.py (remove trailing slash if it's a file)
+# app.py    ← Only add this if you actually want to ignore it
