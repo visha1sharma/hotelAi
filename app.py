@@ -78,6 +78,7 @@ def incoming_lead(phone, message):
 @app.route("/sms-webhook", methods=["POST"])
 def sms_webhook():
     try:
+        print("service started")
         incoming_msg = request.form.get("Body")
         from_number = request.form.get("From")
         print(incoming_msg, from_number)
@@ -99,7 +100,7 @@ def sms_webhook():
             reply += (
                 "\n✅ You're booked! We'll call you at that time.\n[Add to calendar]"
             )
-
+        print("service ended")
         response = MessagingResponse()
         response.message(reply)
         return str(response)
@@ -162,4 +163,4 @@ def send_to_crm(name, phone, appointment_time):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=3000)
