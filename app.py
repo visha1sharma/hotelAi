@@ -163,4 +163,5 @@ def send_to_crm(name, phone, appointment_time):
 
 
 if __name__ == "__main__":
+    print("Hii server started")
     app.run(host="0.0.0.0", port=3000)
