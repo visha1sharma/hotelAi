@@ -75,7 +75,7 @@ def incoming_lead(phone, message):
 
 
 # === Handle Incoming SMS ===
-@app.route("/sms-webhook", methods=["POST"])
+@app.route("/sms-webhook", methods=['GET', 'POST'])
 def sms_webhook():
     try:
         print("✅body: ", request.values.get("Body", None))
