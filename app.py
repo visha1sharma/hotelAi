@@ -78,10 +78,14 @@ def incoming_lead(phone, message):
 @app.route("/sms-webhook", methods=["POST"])
 def sms_webhook():
     try:
-        print("service started")
+        print("✅body: ", request.values.get("Body", None))
+
+        print("FORM DATA:", request.form)
+        print("HEADERS:", request.headers)
+
         incoming_msg = request.form.get("Body")
         from_number = request.form.get("From")
-        print(incoming_msg, from_number)
+
         if not incoming_msg or not from_number:
             return "Missing required fields", 400
 
@@ -92,7 +96,7 @@ def sms_webhook():
             session.commit()
 
         reply, appointment_time = get_ai_reply(incoming_msg)
-        response = incoming_lead(from_number, reply)
+
         if appointment_time:
             lead.status = "Booked"
             session.commit()
@@ -100,10 +104,10 @@ def sms_webhook():
             reply += (
                 "\n✅ You're booked! We'll call you at that time.\n[Add to calendar]"
             )
-        print("service ended")
-        response = MessagingResponse()
-        response.message(reply)
-        return str(response)
+
+        twilio_response = MessagingResponse()
+        twilio_response.message(reply)
+        return str(twilio_response), 200
 
     except Exception:
         logging.exception("Error in /sms-webhook")
@@ -164,4 +168,5 @@ def send_to_crm(name, phone, appointment_time):
 
 if __name__ == "__main__":
     print("Hii server started")
-    app.run(host="0.0.0.0", port=3000)
+    app.run(host="0.0.0.0", port=8000, debug=True)
+# https://bbc3c42c991e.ngrok-free.app
