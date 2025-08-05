@@ -106,7 +106,7 @@ def sms_webhook():
             )
 
         twilio_response = MessagingResponse()
-        twilio_response.message(request.values.get("Body", None))
+        twilio_response.message(reply)
         return str(twilio_response), 200
 
     except Exception:
