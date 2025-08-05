@@ -1,10 +1,10 @@
 import logging
 import os
 
-import openai
 import requests
 from dotenv import load_dotenv
 from flask import Flask, request
+from openai import OpenAI
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from twilio.rest import Client
@@ -26,7 +26,7 @@ CRM_WEBHOOK_URL = os.getenv("CRM_WEBHOOK_URL")
 
 # === API Clients ===
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-openai.api_key = OPENAI_API_KEY
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 # === Database Setup ===
 Base = declarative_base()
@@ -75,7 +75,7 @@ def incoming_lead(phone, message):
 
 
 # === Handle Incoming SMS ===
-@app.route("/sms-webhook", methods=['GET', 'POST'])
+@app.route("/sms-webhook", methods=["GET", "POST"])
 def sms_webhook():
     try:
         print("✅body: ", request.values.get("Body", None))
@@ -106,7 +106,7 @@ def sms_webhook():
             )
 
         twilio_response = MessagingResponse()
-        twilio_response.message(reply)
+        twilio_response.message(request.values.get("Body", None))
         return str(twilio_response), 200
 
     except Exception:
@@ -117,14 +117,13 @@ def sms_webhook():
 # === AI Response + Appointment Time Detection ===
 def get_ai_reply(user_input):
     try:
-        chat = openai.ChatCompletion.create(
-            model="gpt-4o",
+        chat = client.chat.completions.create(
+            model="gpt-4.1",
             messages=[
                 {
-                    "role": "system",
+                    "role": "user",
                     "content": user_input,
-                },
-                {"role": "user", "content": user_input},
+                }
             ],
         )
         reply = chat.choices[0].message.content.strip()
