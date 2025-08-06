@@ -1,0 +1,522 @@
+[
+  {
+    "user_input": "What is Funeral Advantage?",
+    "intent": "Explain Product",
+    "tone": "Professional",
+    "bot_response": "Funeral Advantage is Lincoln Heritage\u2019s leading final expense insurance plan designed to help cover funeral and burial costs. It\u2019s simple, affordable, and accessible for most seniors.",
+    "trigger": [
+      "policy_info"
+    ]
+  },
+  {
+    "user_input": "How much is a $10,000 policy for a 65 year old non-smoker?",
+    "intent": "Pricing Inquiry",
+    "tone": "Professional",
+    "bot_response": "For a 65-year-old non-smoker, the monthly premium for a $10,000 policy is approximately $61.06 for females and $74.12 for males, plus a $3.00 policy fee. Let\u2019s connect you with an agent to confirm the rate and answer questions.",
+    "trigger": [
+      "rate_quote",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Do I need a medical exam?",
+    "intent": "Eligibility Question",
+    "tone": "Friendly",
+    "bot_response": "Nope! No medical exam is required\u2014just a few health questions. Most people qualify. Would you like to speak with a licensed agent today?",
+    "trigger": [
+      "lead_qualification",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "What if I have diabetes?",
+    "intent": "Health Condition",
+    "tone": "Professional",
+    "bot_response": "If your diabetes doesn\u2019t include complications, you may still qualify for full coverage. An agent can review it with you quickly\u2014want me to set that up?",
+    "trigger": [
+      "underwriting",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "I already have life insurance.",
+    "intent": "Objection - Already Covered",
+    "tone": "Friendly",
+    "bot_response": "That\u2019s great to hear! Many of our clients still choose Funeral Advantage as a supplement to cover final expenses. It never hurts to compare\u2014want to schedule a quick review with one of our agents?",
+    "trigger": [
+      "objection_handling",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "I\u2019m not ready yet.",
+    "intent": "Objection - Not Ready",
+    "tone": "Friendly",
+    "bot_response": "Totally understand. Can I have an agent check in next week or send you some info to look over in the meantime?",
+    "trigger": [
+      "follow_up",
+      "send_pdf"
+    ]
+  },
+  {
+    "user_input": "What is the AD&D rider?",
+    "intent": "Rider Info",
+    "tone": "Professional",
+    "bot_response": "The Accidental Death & Dismemberment Rider adds extra protection. It includes payouts for accidents, auto incidents, and even acts of war. Would you like an agent to explain the benefits and cost?",
+    "trigger": [
+      "riders",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "How do I become an agent?",
+    "intent": "Recruiting Inquiry",
+    "tone": "Friendly",
+    "bot_response": "We\u2019d love to work with you! You don\u2019t need to be licensed yet\u2014we help you through every step. Want me to send you the agent overview and connect you with a recruiter?",
+    "trigger": [
+      "recruiting",
+      "send_pdf",
+      "route_to_agent"
+    ]
+  },
+  {
+    "user_input": "Why are you messaging me?",
+    "intent": "Cold Lead Objection",
+    "tone": "Friendly",
+    "bot_response": "We received your request for information about burial insurance, or someone in your household may have submitted it. I can connect you with an agent to explain\u2014would that be okay?",
+    "trigger": [
+      "lead_qualification",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Can I add my grandchild?",
+    "intent": "Rider Info - Child",
+    "tone": "Professional",
+    "bot_response": "Yes, we offer a child rider that provides $5,000 in coverage per unit up to 5 units. The child must be under 18. Want to review it with an agent?",
+    "trigger": [
+      "riders",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Is this a term or whole life policy?",
+    "intent": "Product Type Clarification",
+    "tone": "Professional",
+    "bot_response": "Funeral Advantage is a whole life policy, which means it never expires as long as premiums are paid. Want to go over the benefits with a licensed agent?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "How soon does coverage start?",
+    "intent": "Coverage Timing",
+    "tone": "Friendly",
+    "bot_response": "Great question! Coverage can begin right after approval\u2014often the same day. Want an agent to walk you through how it works?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Do you offer same-day approval?",
+    "intent": "Approval Speed",
+    "tone": "Professional",
+    "bot_response": "Yes, we offer same-day processing and advances when the application and payment are complete. I can have an agent explain the full process\u2014okay to connect you?",
+    "trigger": [
+      "underwriting",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Is this available in Texas?",
+    "intent": "Availability by State",
+    "tone": "Friendly",
+    "bot_response": "Absolutely! We\u2019re licensed in Texas and many other states. Want to chat with an agent in your area?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "I have COPD, can I still qualify?",
+    "intent": "High Risk Health Question",
+    "tone": "Professional",
+    "bot_response": "COPD is considered a significant health condition, but you may still qualify for a Modified Benefit Plan. Let\u2019s have a licensed agent go over your options with you.",
+    "trigger": [
+      "underwriting",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Can you cover my mom?",
+    "intent": "Third Party Application",
+    "tone": "Friendly",
+    "bot_response": "Yes, you can apply for coverage on a loved one as long as there\u2019s insurable interest. An agent can help you complete the application\u2014want me to set that up?",
+    "trigger": [
+      "third_party",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "What\u2019s the minimum I can get?",
+    "intent": "Policy Minimum",
+    "tone": "Professional",
+    "bot_response": "The minimum coverage starts at what $15/month can buy. Let\u2019s go over your age and tobacco status with an agent to get exact numbers.",
+    "trigger": [
+      "rate_quote",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Do you pay for cremation too?",
+    "intent": "Cremation Coverage",
+    "tone": "Friendly",
+    "bot_response": "Yes, your beneficiary can use the policy to cover funeral or cremation costs. Want to talk to an agent about how it works?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "I'm interested but want to see some info first.",
+    "intent": "Info Request Before Appointment",
+    "tone": "Friendly",
+    "bot_response": "Sure! I\u2019ll send you a quick PDF and also set up a call with an agent who can answer your questions. When\u2019s a good time?",
+    "trigger": [
+      "send_pdf",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Can I pay monthly?",
+    "intent": "Billing Option",
+    "tone": "Professional",
+    "bot_response": "Yes, you can pay monthly via bank draft or card. Let me connect you with an agent to set everything up.",
+    "trigger": [
+      "billing",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Is this a term or whole life policy?",
+    "intent": "Product Type Clarification",
+    "tone": "Professional",
+    "bot_response": "Funeral Advantage is a whole life policy, which means it never expires as long as premiums are paid. Want to go over the benefits with a licensed agent?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "How soon does coverage start?",
+    "intent": "Coverage Timing",
+    "tone": "Friendly",
+    "bot_response": "Great question! Coverage can begin right after approval\u2014often the same day. Want an agent to walk you through how it works?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Do you offer same-day approval?",
+    "intent": "Approval Speed",
+    "tone": "Professional",
+    "bot_response": "Yes, we offer same-day processing and advances when the application and payment are complete. I can have an agent explain the full process\u2014okay to connect you?",
+    "trigger": [
+      "underwriting",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Is this available in Texas?",
+    "intent": "Availability by State",
+    "tone": "Friendly",
+    "bot_response": "Absolutely! We\u2019re licensed in Texas and many other states. Want to chat with an agent in your area?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "I have COPD, can I still qualify?",
+    "intent": "High Risk Health Question",
+    "tone": "Professional",
+    "bot_response": "COPD is considered a significant health condition, but you may still qualify for a Modified Benefit Plan. Let\u2019s have a licensed agent go over your options with you.",
+    "trigger": [
+      "underwriting",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Can you cover my mom?",
+    "intent": "Third Party Application",
+    "tone": "Friendly",
+    "bot_response": "Yes, you can apply for coverage on a loved one as long as there\u2019s insurable interest. An agent can help you complete the application\u2014want me to set that up?",
+    "trigger": [
+      "third_party",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "What\u2019s the minimum I can get?",
+    "intent": "Policy Minimum",
+    "tone": "Professional",
+    "bot_response": "The minimum coverage starts at what $15/month can buy. Let\u2019s go over your age and tobacco status with an agent to get exact numbers.",
+    "trigger": [
+      "rate_quote",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Do you pay for cremation too?",
+    "intent": "Cremation Coverage",
+    "tone": "Friendly",
+    "bot_response": "Yes, your beneficiary can use the policy to cover funeral or cremation costs. Want to talk to an agent about how it works?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "I'm interested but want to see some info first.",
+    "intent": "Info Request Before Appointment",
+    "tone": "Friendly",
+    "bot_response": "Sure! I\u2019ll send you a quick PDF and also set up a call with an agent who can answer your questions. When\u2019s a good time?",
+    "trigger": [
+      "send_pdf",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Can I pay monthly?",
+    "intent": "Billing Option",
+    "tone": "Professional",
+    "bot_response": "Yes, you can pay monthly via bank draft or card. Let me connect you with an agent to set everything up.",
+    "trigger": [
+      "billing",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Is this a term or whole life policy?",
+    "intent": "Product Type Clarification",
+    "tone": "Professional",
+    "bot_response": "Funeral Advantage is a whole life policy, which means it never expires as long as premiums are paid. Want to go over the benefits with a licensed agent?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "How soon does coverage start?",
+    "intent": "Coverage Timing",
+    "tone": "Friendly",
+    "bot_response": "Great question! Coverage can begin right after approval\u2014often the same day. Want an agent to walk you through how it works?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Do you offer same-day approval?",
+    "intent": "Approval Speed",
+    "tone": "Professional",
+    "bot_response": "Yes, we offer same-day processing and advances when the application and payment are complete. I can have an agent explain the full process\u2014okay to connect you?",
+    "trigger": [
+      "underwriting",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Is this available in Texas?",
+    "intent": "Availability by State",
+    "tone": "Friendly",
+    "bot_response": "Absolutely! We\u2019re licensed in Texas and many other states. Want to chat with an agent in your area?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "I have COPD, can I still qualify?",
+    "intent": "High Risk Health Question",
+    "tone": "Professional",
+    "bot_response": "COPD is considered a significant health condition, but you may still qualify for a Modified Benefit Plan. Let\u2019s have a licensed agent go over your options with you.",
+    "trigger": [
+      "underwriting",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Can you cover my mom?",
+    "intent": "Third Party Application",
+    "tone": "Friendly",
+    "bot_response": "Yes, you can apply for coverage on a loved one as long as there\u2019s insurable interest. An agent can help you complete the application\u2014want me to set that up?",
+    "trigger": [
+      "third_party",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "What\u2019s the minimum I can get?",
+    "intent": "Policy Minimum",
+    "tone": "Professional",
+    "bot_response": "The minimum coverage starts at what $15/month can buy. Let\u2019s go over your age and tobacco status with an agent to get exact numbers.",
+    "trigger": [
+      "rate_quote",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Do you pay for cremation too?",
+    "intent": "Cremation Coverage",
+    "tone": "Friendly",
+    "bot_response": "Yes, your beneficiary can use the policy to cover funeral or cremation costs. Want to talk to an agent about how it works?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "I'm interested but want to see some info first.",
+    "intent": "Info Request Before Appointment",
+    "tone": "Friendly",
+    "bot_response": "Sure! I\u2019ll send you a quick PDF and also set up a call with an agent who can answer your questions. When\u2019s a good time?",
+    "trigger": [
+      "send_pdf",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Can I pay monthly?",
+    "intent": "Billing Option",
+    "tone": "Professional",
+    "bot_response": "Yes, you can pay monthly via bank draft or card. Let me connect you with an agent to set everything up.",
+    "trigger": [
+      "billing",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Is this a term or whole life policy?",
+    "intent": "Product Type Clarification",
+    "tone": "Professional",
+    "bot_response": "Funeral Advantage is a whole life policy, which means it never expires as long as premiums are paid. Want to go over the benefits with a licensed agent?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "How soon does coverage start?",
+    "intent": "Coverage Timing",
+    "tone": "Friendly",
+    "bot_response": "Great question! Coverage can begin right after approval\u2014often the same day. Want an agent to walk you through how it works?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Do you offer same-day approval?",
+    "intent": "Approval Speed",
+    "tone": "Professional",
+    "bot_response": "Yes, we offer same-day processing and advances when the application and payment are complete. I can have an agent explain the full process\u2014okay to connect you?",
+    "trigger": [
+      "underwriting",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Is this available in Texas?",
+    "intent": "Availability by State",
+    "tone": "Friendly",
+    "bot_response": "Absolutely! We\u2019re licensed in Texas and many other states. Want to chat with an agent in your area?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "I have COPD, can I still qualify?",
+    "intent": "High Risk Health Question",
+    "tone": "Professional",
+    "bot_response": "COPD is considered a significant health condition, but you may still qualify for a Modified Benefit Plan. Let\u2019s have a licensed agent go over your options with you.",
+    "trigger": [
+      "underwriting",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Can you cover my mom?",
+    "intent": "Third Party Application",
+    "tone": "Friendly",
+    "bot_response": "Yes, you can apply for coverage on a loved one as long as there\u2019s insurable interest. An agent can help you complete the application\u2014want me to set that up?",
+    "trigger": [
+      "third_party",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "What\u2019s the minimum I can get?",
+    "intent": "Policy Minimum",
+    "tone": "Professional",
+    "bot_response": "The minimum coverage starts at what $15/month can buy. Let\u2019s go over your age and tobacco status with an agent to get exact numbers.",
+    "trigger": [
+      "rate_quote",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Do you pay for cremation too?",
+    "intent": "Cremation Coverage",
+    "tone": "Friendly",
+    "bot_response": "Yes, your beneficiary can use the policy to cover funeral or cremation costs. Want to talk to an agent about how it works?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "I'm interested but want to see some info first.",
+    "intent": "Info Request Before Appointment",
+    "tone": "Friendly",
+    "bot_response": "Sure! I\u2019ll send you a quick PDF and also set up a call with an agent who can answer your questions. When\u2019s a good time?",
+    "trigger": [
+      "send_pdf",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Can I pay monthly?",
+    "intent": "Billing Option",
+    "tone": "Professional",
+    "bot_response": "Yes, you can pay monthly via bank draft or card. Let me connect you with an agent to set everything up.",
+    "trigger": [
+      "billing",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "Is this a term or whole life policy?",
+    "intent": "Product Type Clarification",
+    "tone": "Professional",
+    "bot_response": "Funeral Advantage is a whole life policy, which means it never expires as long as premiums are paid. Want to go over the benefits with a licensed agent?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  },
+  {
+    "user_input": "How soon does coverage start?",
+    "intent": "Coverage Timing",
+    "tone": "Friendly",
+    "bot_response": "Great question! Coverage can begin right after approval\u2014often the same day. Want an agent to walk you through how it works?",
+    "trigger": [
+      "policy_info",
+      "set_appointment"
+    ]
+  }
+]

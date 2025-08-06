@@ -1,4 +1,3 @@
-
 import logging
 import os
 import re
@@ -379,7 +378,8 @@ def handle_stage(lead: Lead, user_msg: str) -> str:
         lead.stage = "ask_age"
         db.commit()
         first_name = lead.name.split()[0]
-        return QUALIFICATION_QUESTIONS["ask_age"].format(first_name=first_name)
+        return f"\n{QUALIFICATION_QUESTIONS['ask_age'].format(first_name=first_name)}"
+        # return QUALIFICATION_QUESTIONS["ask_age"].format(first_name=first_name)
 
     # 3. Age
     if stage == "ask_age":
@@ -389,14 +389,14 @@ def handle_stage(lead: Lead, user_msg: str) -> str:
         lead.age = int(age_match.group())
         lead.stage = "ask_state"
         db.commit()
-        return QUALIFICATION_QUESTIONS["ask_state"]
+        return f"\n{QUALIFICATION_QUESTIONS['ask_state']}"
 
     # 4. State
     if stage == "ask_state":
         lead.state = user_msg.strip()
         lead.stage = "ask_health_confirm"
         db.commit()
-        return QUALIFICATION_QUESTIONS["ask_health_confirm"]
+        return f"\n{QUALIFICATION_QUESTIONS['ask_health_confirm']}"
 
     # 5. Health confirmation
     if stage == "ask_health_confirm":
@@ -405,12 +405,12 @@ def handle_stage(lead: Lead, user_msg: str) -> str:
             lead.health_flag = "Yes"
             lead.stage = "ask_health_details"
             db.commit()
-            return QUALIFICATION_QUESTIONS["ask_health_details"]
+            return f"\n{QUALIFICATION_QUESTIONS['ask_health_details']}"
         elif "no" in user_lower and "yes" not in user_lower:
             lead.health_flag = "No"
             lead.stage = "ask_budget"
             db.commit()
-            return QUALIFICATION_QUESTIONS["ask_budget"]
+            return f"\n{QUALIFICATION_QUESTIONS['ask_budget']}"
         else:
             return (
                 "Please answer *Yes* or *No* - do you have any major health conditions?"
@@ -421,7 +421,7 @@ def handle_stage(lead: Lead, user_msg: str) -> str:
         lead.health_details = user_msg.strip()
         lead.stage = "ask_budget"
         db.commit()
-        return QUALIFICATION_QUESTIONS["ask_budget"]
+        return f"\n{QUALIFICATION_QUESTIONS['ask_budget']}"
 
     # 7. Budget
     if stage == "ask_budget":
@@ -431,7 +431,7 @@ def handle_stage(lead: Lead, user_msg: str) -> str:
         lead.budget = budget_amount
         lead.stage = "ask_contact_time"
         db.commit()
-        return QUALIFICATION_QUESTIONS["ask_contact_time"]
+        return f"\n{QUALIFICATION_QUESTIONS['ask_contact_time']}"
 
     # 8. Contact time preference
     if stage == "ask_contact_time":
@@ -465,7 +465,9 @@ def handle_stage(lead: Lead, user_msg: str) -> str:
         lead.slot = chosen_slot
         lead.stage = "confirm_booking"
         db.commit()
-        return QUALIFICATION_QUESTIONS["confirm_booking"].format(slot=chosen_slot)
+        return (
+            f"\n{QUALIFICATION_QUESTIONS['confirm_booking'].format(slot=chosen_slot)}"
+        )
 
     # 10. Booking confirmation
     if stage == "confirm_booking":
