@@ -491,39 +491,47 @@ def home():
 def sms_webhook():
     """Enhanced SMS webhook with JSON training data integration"""
     try:
-        print("📱 Incoming SMS webhook called")
-        print(
-            "Form data received:", request.form.to_dict()
-        )  # Log all incoming form fields
+        # 🔍 Log full incoming request details for debugging
+        print("➡️ Headers:", dict(request.headers))
+        print("➡️ request.form:", request.form.to_dict())
+        print("➡️ request.data (raw body):", request.get_data(as_text=True))
 
+        # ✅ Try form data first (what Twilio normally sends)
         incoming_msg = request.form.get("Body")
         from_number = request.form.get("From")
 
+        # ⛔ If form is empty, try JSON as fallback (for debugging)
+        if not incoming_msg or not from_number:
+            try:
+                json_data = request.get_json(force=True)
+                incoming_msg = json_data.get("Body")
+                from_number = json_data.get("From")
+                print("📦 Fallback to JSON:", json_data)
+            except Exception as e:
+                print("⚠️ JSON fallback failed:", e)
+
+        # ❌ Still missing? Return proper error with content-type
         if not incoming_msg or not from_number:
             logging.warning(
                 f"Missing fields - From: {from_number}, Body: {incoming_msg}"
             )
-            return jsonify(
-                {
-                    "error": "Missing required fields",
-                    "details": {"From": from_number, "Body": incoming_msg},
-                }
-            ), 400
+            error_xml = MessagingResponse()
+            error_xml.message("Missing required fields. Please try again.")
+            return Response(str(error_xml), mimetype="application/xml")
 
         incoming_msg = incoming_msg.strip()
         from_number = from_number.strip()
-
         logging.info(f"📨 SMS from {from_number}: {incoming_msg}")
 
-        # Find or create lead
+        # 🧠 Find or create lead
         lead = db.query(Lead).filter_by(phone=from_number).first()
         if not lead:
             lead = Lead(phone=from_number, stage="greeting")
             db.add(lead)
             db.commit()
-            logging.info(f"Created new lead for {from_number}")
+            logging.info(f"✅ Created new lead for {from_number}")
 
-        # Handle opt-out keywords
+        # ✋ Handle opt-out
         if any(
             word in incoming_msg.lower()
             for word in ["stop", "quit", "unsubscribe", "opt out"]
@@ -532,9 +540,9 @@ def sms_webhook():
             db.commit()
             response = MessagingResponse()
             response.message("You have been unsubscribed. Reply START to opt back in.")
-            return str(response), 200
+            return Response(str(response), mimetype="application/xml")
 
-        # Handle restart keywords
+        # 🔁 Restart command
         if any(
             word in incoming_msg.lower()
             for word in ["start", "restart", "begin", "hello", "hi"]
@@ -543,23 +551,22 @@ def sms_webhook():
                 lead.stage = "greeting"
                 db.commit()
 
-        # Process message through enhanced state machine with JSON integration
+        # 🧠 Main logic
         reply = handle_stage_with_json(lead, incoming_msg)
 
-        # Send response
+        # 📤 Send back reply
         response = MessagingResponse()
         response.message(reply)
-
         logging.info(f"📤 Response to {from_number}: {reply}")
-        return str(response), 200
+        return Response(str(response), mimetype="application/xml")
 
     except Exception as e:
-        logging.error(f"Error in sms_webhook: {e}")
+        logging.error(f"💥 Error in sms_webhook: {e}")
         response = MessagingResponse()
         response.message(
             "Sorry, something went wrong. Please try again or type 'START' to begin over."
         )
-        return str(response), 500
+        return Response(str(response), mimetype="application/xml")
 
 
 # === Testing Endpoint ===
