@@ -7,7 +7,7 @@ import uuid
 
 import requests
 from dotenv import load_dotenv
-from flask import Flask, request
+from flask import Flask, jsonify, request
 from fuzzywuzzy import fuzz
 from openai import OpenAI
 from sqlalchemy import Column, Integer, String, create_engine
@@ -270,7 +270,8 @@ def handle_stage(lead, msg):
 
     return ai_fallback(msg)
 
-def send_sms(reply, sender_number):
+
+def send_sms1(reply, sender_number):
     """Send SMS via Twilio. Returns message SID or None on error."""
     try:
         logger.info("send_sms -> to=%s body=%s", sender_number, repr(reply)[:160])
@@ -286,12 +287,15 @@ def send_sms(reply, sender_number):
             kwargs["from_"] = TWILIO_PHONE_NUMBER
 
         message = twilio_client.messages.create(**kwargs)
-        logger.info("✅ Message queued. SID=%s Status=%s", message.sid, getattr(message, "status", "n/a"))
+        logger.info(
+            "✅ Message queued. SID=%s Status=%s",
+            message.sid,
+            getattr(message, "status", "n/a"),
+        )
         return message.sid
     except Exception as e:
         logger.error("❌ Error sending message: %s", e)
         return None
-
 
 
 @app.route("/twilio-status", methods=["POST"])
@@ -300,6 +304,7 @@ def message_status():
     message_status = request.form.get("MessageStatus")
     print(f"Message SID: {message_sid} has status: {message_status}")
     return "OK", 200
+
 
 # === Webhook ===
 @app.route("/sms-webhook", methods=["POST"])
@@ -360,6 +365,24 @@ def sms_webhook():
 
     # Acknowledge Twilio webhook (we use API send to avoid double messages)
     return "", 200
+
+
+# Twilio credentials (use env vars in production)
+
+
+# ✅ API: Send SMS
+@app.route("/send-sms", methods=["GET"])
+def send_sms():
+    try:
+        message = twilio_client.messages.create(
+            body="hii", from_="+19713768108", to="+13322097232"
+        )
+        return jsonify({"status": "sent", "sid": message.sid})
+    except Exception as e:
+        return jsonify({"status": "failed", "error": str(e)}), 500
+
+
+# ✅ API: Receive SMS (Webhook from Twilio)
 
 
 # === Run ===
