@@ -1,12 +1,11 @@
-# Updated and Cleaned Flask Twilio Bot with JSON + AI Fallback
-
+# fixed_app.py
 import json
 import logging
 import os
 import re
 import uuid
-from venv import logger
 
+import requests
 from dotenv import load_dotenv
 from flask import Flask, request
 from fuzzywuzzy import fuzz
@@ -17,7 +16,8 @@ from twilio.rest import Client
 
 # === Setup ===
 load_dotenv()
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger("twilio-bot")
 
 app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
@@ -37,10 +37,10 @@ def load_training_dataset():
     try:
         with open(JSON_FILE_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
-            print(f"Loaded {len(data)} training items ✅")
+            logger.info("Loaded %d training items ✅", len(data))
             return data
     except Exception as e:
-        print(f"Error loading training data ❌: {e}")
+        logger.error("Error loading training data ❌: %s", e)
         return []
 
 
@@ -50,11 +50,12 @@ TRAINING_DATA = load_training_dataset()
 TWILIO_ACCOUNT_SID = os.getenv("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = os.getenv("TWILIO_AUTH_TOKEN")
 TWILIO_PHONE_NUMBER = os.getenv("TWILIO_PHONE_NUMBER")
+TWILIO_MESSAGING_SERVICE_SID = os.getenv("TWILIO_MESSAGING_SERVICE_SID")  # optional
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 CRM_WEBHOOK_URL = os.getenv("CRM_WEBHOOK_URL")
 
 twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 # === Database ===
 Base = declarative_base()
@@ -107,11 +108,11 @@ Reply with the slot number.""",
 def find_json_response(user_input: str):
     user_input_lower = user_input.lower().strip()
     for item in TRAINING_DATA:
-        if user_input_lower == item["user_input"].lower():
+        if user_input_lower == item.get("user_input", "").lower():
             return item
     best_match, best_score = None, 0
     for item in TRAINING_DATA:
-        score = fuzz.partial_ratio(user_input_lower, item["user_input"].lower())
+        score = fuzz.partial_ratio(user_input_lower, item.get("user_input", "").lower())
         if score > best_score and score >= 75:
             best_match, best_score = item, score
     return best_match
@@ -124,6 +125,8 @@ def format_json_response_for_sms(text):
 
 
 def ai_fallback(user_msg):
+    if not openai_client:
+        return "I'm here to help with Final Expense Insurance. Would you like a quote?"
     try:
         response = openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -139,7 +142,7 @@ def ai_fallback(user_msg):
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        logging.error(f"AI fallback failed: {e}")
+        logger.error("AI fallback failed: %s", e)
         return "I'm here to help with Final Expense Insurance. Would you like a quote?"
 
 
@@ -229,6 +232,23 @@ def handle_stage(lead, msg):
             lead.ticket = f"TPG-{uuid.uuid4().hex[:8].upper()}"
             lead.stage = "completed"
             db.commit()
+            # optional: send to CRM
+            if CRM_WEBHOOK_URL:
+                try:
+                    crm_data = {
+                        "name": lead.name,
+                        "phone": lead.phone,
+                        "age": lead.age,
+                        "state": lead.state,
+                        "health_flag": lead.health_flag,
+                        "health_details": lead.health_details,
+                        "budget": lead.budget,
+                        "appointment_slot": lead.slot,
+                        "ticket": lead.ticket,
+                    }
+                    requests.post(CRM_WEBHOOK_URL, json=crm_data, timeout=10)
+                except Exception as e:
+                    logger.error("Failed sending CRM webhook: %s", e)
             return QUALIFICATION_QUESTIONS["completed"].format(
                 slot=lead.slot, ticket=lead.ticket
             )
@@ -251,59 +271,94 @@ def handle_stage(lead, msg):
     return ai_fallback(msg)
 
 
-def send_sms(reply, sender_nmber):
+def send_sms(reply, sender_number):
+    """Send SMS via Twilio. Returns message SID or None on error."""
     try:
-        print(sender_nmber)
-        if not sender_nmber.startswith("+"):
-            raise ValueError(
-                "Phone number must be in E.164 format with country code, e.g., +14155552671"
-            )
-        message = twilio_client.messages.create(
-            body=reply, from_=TWILIO_PHONE_NUMBER, to=sender_nmber
+        logger.info("send_sms -> to=%s body=%s", sender_number, repr(reply)[:160])
+        if not sender_number.startswith("+"):
+            raise ValueError("Phone number must be in E.164 format, e.g. +14155552671")
+
+        kwargs = {"body": reply, "to": sender_number}
+        # prefer messaging_service_sid if configured (some numbers use messaging services)
+        if TWILIO_MESSAGING_SERVICE_SID:
+            kwargs["messaging_service_sid"] = TWILIO_MESSAGING_SERVICE_SID
+        else:
+            kwargs["from_"] = TWILIO_PHONE_NUMBER
+
+        message = twilio_client.messages.create(**kwargs)
+        logger.info(
+            "✅ Message queued. SID=%s Status=%s",
+            message.sid,
+            getattr(message, "status", "n/a"),
         )
-        print(f"✅ Message sent! SID: {message.sid}")
+        return message.sid
     except Exception as e:
-        print(f"❌ Error sending message: {e}")
+        logger.error("❌ Error sending message: %s", e)
+        return None
 
 
 # === Webhook ===
 @app.route("/sms-webhook", methods=["POST"])
 def sms_webhook():
-    logger.info(request)
-    incoming_msg = request.form.get("Body", "").strip()
-    from_number = request.form.get("From", "").strip()
+    # log everything for debugging
+    logger.info("Incoming webhook headers=%s", dict(request.headers))
+    logger.info("Incoming webhook form=%s", request.form.to_dict())
+    data = request.values  # covers form and query
+    incoming_msg = (data.get("Body") or "").strip()
+    from_number = (data.get("From") or "").strip()
+    message_status = data.get("MessageStatus")  # present for status callbacks
 
-    # Always return 200 to Twilio (never 400) to avoid retries
-    if not incoming_msg or not from_number:
-        logger.warning("Missing Body or From in webhook request")
+    # If this is a Twilio delivery/status callback, ack and return 200
+    if message_status:
+        logger.info(
+            "Received status callback: MessageStatus=%s for SID=%s",
+            message_status,
+            data.get("MessageSid"),
+        )
         return "", 200
 
-    logger.info(f"Incoming: {incoming_msg} from {from_number}")
+    # Always return 200 to Twilio even if payload missing (prevents retries)
+    if not incoming_msg or not from_number:
+        logger.warning(
+            "Missing Body or From, ignoring. form=%s", request.form.to_dict()
+        )
+        return "", 200
 
-    # Look up or create a lead
+    logger.info("Incoming message from %s: %s", from_number, incoming_msg)
+
+    # Find or create lead
     lead = db.query(Lead).filter_by(phone=from_number).first()
     if not lead:
         lead = Lead(phone=from_number, stage="greeting")
         db.add(lead)
         db.commit()
+        logger.info("Created new lead for %s", from_number)
 
-    # Handle STOP / unsubscribe
-    if any(w in incoming_msg.lower() for w in ["stop", "unsubscribe"]):
+    # Handle opt-out
+    if any(
+        w in incoming_msg.lower() for w in ["stop", "unsubscribe", "quit", "no more"]
+    ):
         lead.status = "Opt-Out"
         db.commit()
-        send_sms("You've been unsubscribed. Reply START to opt in.", from_number)
+        sid = send_sms("You've been unsubscribed. Reply START to opt in.", from_number)
+        logger.info("Opt-out reply SID=%s", sid)
         return "", 200
 
-    # Get reply text from conversation logic
+    # Main bot logic
     reply = handle_stage(lead, incoming_msg)
 
-    # Send SMS reply
-    send_sms(reply, from_number)
+    # Send reply via API (single source of truth for outbound)
+    sid = send_sms(reply, from_number)
+    if sid:
+        logger.info("Reply sent SID=%s", sid)
+    else:
+        logger.error("Failed to send reply to %s", from_number)
 
+    # Acknowledge Twilio webhook (we use API send to avoid double messages)
     return "", 200
 
 
 # === Run ===
 if __name__ == "__main__":
-    print("Server running on http://localhost:8000")
+    logger.info("Server running on http://localhost:8000")
     app.run(host="0.0.0.0", port=8000, debug=True)
