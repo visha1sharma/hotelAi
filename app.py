@@ -14,7 +14,6 @@ from openai import OpenAI
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 from twilio.rest import Client
-from twilio.twiml.messaging_response import MessagingResponse
 
 # === Setup ===
 load_dotenv()
@@ -274,28 +273,34 @@ def sms_webhook():
     incoming_msg = request.form.get("Body", "").strip()
     from_number = request.form.get("From", "").strip()
 
+    # Always return 200 to Twilio (never 400) to avoid retries
     if not incoming_msg or not from_number:
-        return "Missing required fields", 400
-    logger.info(incoming_msg + " number" + from_number)
+        logger.warning("Missing Body or From in webhook request")
+        return "", 200
+
+    logger.info(f"Incoming: {incoming_msg} from {from_number}")
+
+    # Look up or create a lead
     lead = db.query(Lead).filter_by(phone=from_number).first()
     if not lead:
         lead = Lead(phone=from_number, stage="greeting")
         db.add(lead)
         db.commit()
 
+    # Handle STOP / unsubscribe
     if any(w in incoming_msg.lower() for w in ["stop", "unsubscribe"]):
         lead.status = "Opt-Out"
         db.commit()
-        resp = MessagingResponse()
-        resp.message("You've been unsubscribed. Reply START to opt in.")
-        return str(resp)
+        send_sms("You've been unsubscribed. Reply START to opt in.", from_number)
+        return "", 200
 
+    # Get reply text from conversation logic
     reply = handle_stage(lead, incoming_msg)
-    res_of_reply = send_sms(reply, from_number)
-    logger.info(res_of_reply)
-    resp = MessagingResponse()
-    resp.message(reply)
-    return str(resp)
+
+    # Send SMS reply
+    send_sms(reply, from_number)
+
+    return "", 200
 
 
 # === Run ===
