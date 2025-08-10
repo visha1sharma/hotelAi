@@ -4,13 +4,11 @@ import json
 import logging
 import os
 import re
-import shutil
 import uuid
-from datetime import datetime
+from venv import logger
 
-import requests
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request
+from flask import Flask, request
 from fuzzywuzzy import fuzz
 from openai import OpenAI
 from sqlalchemy import Column, Integer, String, create_engine
@@ -27,11 +25,15 @@ UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"json"}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 # === Load Training Dataset ===
 JSON_FILE_PATH = "chatbot_training_dataset_tpg_full.json"
+
+
 def load_training_dataset():
     try:
         with open(JSON_FILE_PATH, "r", encoding="utf-8") as f:
@@ -41,6 +43,7 @@ def load_training_dataset():
     except Exception as e:
         print(f"Error loading training data ❌: {e}")
         return []
+
 
 TRAINING_DATA = load_training_dataset()
 
@@ -56,9 +59,12 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 # === Database ===
 Base = declarative_base()
-engine = create_engine("sqlite:///leads.db", echo=False, connect_args={"check_same_thread": False})
+engine = create_engine(
+    "sqlite:///leads.db", echo=False, connect_args={"check_same_thread": False}
+)
 Session = sessionmaker(bind=engine)
 db = Session()
+
 
 class Lead(Base):
     __tablename__ = "leads"
@@ -77,6 +83,7 @@ class Lead(Base):
     ticket = Column(String)
     status = Column(String, default="Active")
 
+
 Base.metadata.create_all(engine)
 
 # === Qualification Prompts ===
@@ -93,8 +100,9 @@ QUALIFICATION_QUESTIONS = {
 {slots}
 Reply with the slot number.""",
     "confirm_booking": "Booked for **{slot}**. Confirm? (Yes/No)",
-    "completed": "Confirmed for **{slot}**. Ticket: **{ticket}**. Talk soon! ✅"
+    "completed": "Confirmed for **{slot}**. Ticket: **{ticket}**. Talk soon! ✅",
 }
+
 
 # === Helper Functions ===
 def find_json_response(user_input: str):
@@ -109,17 +117,22 @@ def find_json_response(user_input: str):
             best_match, best_score = item, score
     return best_match
 
+
 def format_json_response_for_sms(text):
     text = re.sub(r"\*\*(.*?)\*\*", r"\1", text)
     text = re.sub(r"\*(.*?)\*", r"\1", text)
     return text.strip()[:1500]
+
 
 def ai_fallback(user_msg):
     try:
         response = openai_client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You're Nia from The Paul Group helping with Final Expense insurance."},
+                {
+                    "role": "system",
+                    "content": "You're Nia from The Paul Group helping with Final Expense insurance.",
+                },
                 {"role": "user", "content": user_msg},
             ],
             max_tokens=150,
@@ -129,6 +142,7 @@ def ai_fallback(user_msg):
     except Exception as e:
         logging.error(f"AI fallback failed: {e}")
         return "I'm here to help with Final Expense Insurance. Would you like a quote?"
+
 
 def handle_stage(lead, msg):
     stage = lead.stage
@@ -145,7 +159,9 @@ def handle_stage(lead, msg):
         lead.name = msg.strip()
         lead.stage = "ask_age"
         db.commit()
-        return QUALIFICATION_QUESTIONS["ask_age"].format(first_name=lead.name.split()[0])
+        return QUALIFICATION_QUESTIONS["ask_age"].format(
+            first_name=lead.name.split()[0]
+        )
 
     if stage == "ask_age":
         match = re.search(r"\b(\d{1,3})\b", msg)
@@ -193,7 +209,9 @@ def handle_stage(lead, msg):
         lead.slot_options = json.dumps(slots)
         lead.stage = "ask_time_slot_confirmation"
         db.commit()
-        return QUALIFICATION_QUESTIONS["ask_time_slot_confirmation"].format(period=lead.contact_time, slots="\n".join(slots))
+        return QUALIFICATION_QUESTIONS["ask_time_slot_confirmation"].format(
+            period=lead.contact_time, slots="\n".join(slots)
+        )
 
     if stage == "ask_time_slot_confirmation":
         try:
@@ -212,7 +230,9 @@ def handle_stage(lead, msg):
             lead.ticket = f"TPG-{uuid.uuid4().hex[:8].upper()}"
             lead.stage = "completed"
             db.commit()
-            return QUALIFICATION_QUESTIONS["completed"].format(slot=lead.slot, ticket=lead.ticket)
+            return QUALIFICATION_QUESTIONS["completed"].format(
+                slot=lead.slot, ticket=lead.ticket
+            )
         elif "no" in msg.lower():
             lead.stage = "ask_contact_time"
             db.commit()
@@ -231,6 +251,22 @@ def handle_stage(lead, msg):
 
     return ai_fallback(msg)
 
+
+def send_sms(reply, sender_nmber):
+    try:
+        print(sender_nmber)
+        if not sender_nmber.startswith("+"):
+            raise ValueError(
+                "Phone number must be in E.164 format with country code, e.g., +14155552671"
+            )
+        message = twilio_client.messages.create(
+            body=reply, from_=TWILIO_PHONE_NUMBER, to=sender_nmber
+        )
+        print(f"✅ Message sent! SID: {message.sid}")
+    except Exception as e:
+        print(f"❌ Error sending message: {e}")
+
+
 # === Webhook ===
 @app.route("/sms-webhook", methods=["GET", "POST"])
 def sms_webhook():
@@ -239,7 +275,7 @@ def sms_webhook():
 
     if not incoming_msg or not from_number:
         return "Missing required fields", 400
-
+    logger.info(incoming_msg + " number" + from_number)
     lead = db.query(Lead).filter_by(phone=from_number).first()
     if not lead:
         lead = Lead(phone=from_number, stage="greeting")
@@ -254,9 +290,12 @@ def sms_webhook():
         return str(resp)
 
     reply = handle_stage(lead, incoming_msg)
+    res_of_reply = send_sms(reply,from_number)
+    logger.info(res_of_reply)
     resp = MessagingResponse()
     resp.message(reply)
     return str(resp)
+
 
 # === Run ===
 if __name__ == "__main__":
