@@ -268,8 +268,9 @@ def send_sms(reply, sender_nmber):
 
 
 # === Webhook ===
-@app.route("/sms-webhook", methods=["GET", "POST"])
+@app.route("/sms-webhook", methods=["POST"])
 def sms_webhook():
+    logger.info(request)
     incoming_msg = request.form.get("Body", "").strip()
     from_number = request.form.get("From", "").strip()
 
@@ -290,7 +291,7 @@ def sms_webhook():
         return str(resp)
 
     reply = handle_stage(lead, incoming_msg)
-    res_of_reply = send_sms(reply,from_number)
+    res_of_reply = send_sms(reply, from_number)
     logger.info(res_of_reply)
     resp = MessagingResponse()
     resp.message(reply)
