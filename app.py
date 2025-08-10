@@ -270,7 +270,6 @@ def handle_stage(lead, msg):
 
     return ai_fallback(msg)
 
-
 def send_sms(reply, sender_number):
     """Send SMS via Twilio. Returns message SID or None on error."""
     try:
@@ -279,18 +278,15 @@ def send_sms(reply, sender_number):
             raise ValueError("Phone number must be in E.164 format, e.g. +14155552671")
 
         kwargs = {"body": reply, "to": sender_number}
-        # prefer messaging_service_sid if configured (some numbers use messaging services)
-        if TWILIO_MESSAGING_SERVICE_SID:
+
+        if TWILIO_MESSAGING_SERVICE_SID and TWILIO_MESSAGING_SERVICE_SID.strip():
+            logger.info("Using Messaging Service SID: %s", TWILIO_MESSAGING_SERVICE_SID)
             kwargs["messaging_service_sid"] = TWILIO_MESSAGING_SERVICE_SID
         else:
             kwargs["from_"] = TWILIO_PHONE_NUMBER
 
         message = twilio_client.messages.create(**kwargs)
-        logger.info(
-            "✅ Message queued. SID=%s Status=%s",
-            message.sid,
-            getattr(message, "status", "n/a"),
-        )
+        logger.info("✅ Message queued. SID=%s Status=%s", message.sid, getattr(message, "status", "n/a"))
         return message.sid
     except Exception as e:
         logger.error("❌ Error sending message: %s", e)
