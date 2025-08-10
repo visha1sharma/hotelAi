@@ -293,6 +293,14 @@ def send_sms(reply, sender_number):
         return None
 
 
+
+@app.route("/twilio-status", methods=["POST"])
+def message_status():
+    message_sid = request.form.get("MessageSid")
+    message_status = request.form.get("MessageStatus")
+    print(f"Message SID: {message_sid} has status: {message_status}")
+    return "OK", 200
+
 # === Webhook ===
 @app.route("/sms-webhook", methods=["POST"])
 def sms_webhook():
