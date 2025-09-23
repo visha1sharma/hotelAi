@@ -374,9 +374,22 @@ def sms_webhook():
 @app.route("/send-sms", methods=["GET"])
 def send_sms():
     try:
-        message = twilio_client.messages.create(
-            body="hii", from_="+19713768108", to="+13322097232"
-        )
+    data = request.get_json()
+    
+    # Extract params from request body
+    to_number = data.get("to")
+    message_body = data.get("body")
+    
+    if not to_number or not message_body:
+        return jsonify({"status": "failed", "error": "Missing 'to' or 'body'"}), 400
+    
+    # Send message
+    message = twilio_client.messages.create(
+        body=message_body,
+        from_=TWILIO_PHONE_NUMBER,
+        to=to_number
+    )
+
         return jsonify({"status": "sent", "sid": message.sid})
     except Exception as e:
         return jsonify({"status": "failed", "error": str(e)}), 500
