@@ -371,7 +371,7 @@ def sms_webhook():
 
 
 # ✅ API: Send SMS
-@app.route("/send-sms", methods=["GET"])
+@app.route("/send-sms", methods=["POST"])
 def send_sms():
     try:
         data = request.get_json()
